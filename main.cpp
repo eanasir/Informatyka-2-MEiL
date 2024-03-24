@@ -1,50 +1,79 @@
 #define _CRT_SECURE_NO_WARNINGS    
-#include <stdio.h>  
-#include <math.h>  
-#include <stdlib.h>  
-#include "kwad.h"
-double mojaFunkcja1(double x);
-double mojaFunkcja2(double x);
-double ca³kaAnalityczna_1(double a, double b);
-double ca³kaAnalityczna_2(double a, double b);
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include "winbgi2.h"
+#include "nonlin.h"
 
 
+double fun(double x);
+double pochodna(double x);
+double siecz(double x1, double x2, double (*pf)(double), double eps, int* iter);
+double newton(double x, double(*pf)(double), double(*poch)(double), double eps, int* iter);
 
-int main() {
-	FILE* f, * g;
+void main()
+{
+	FILE* f,* g,*h;
 	f = fopen("plik1.txt", "w");
-	g = fopen("plik2.csv", "w");
-	double a = 0; //górna granica ca³kowania
-	double b = 4*atan(1); //dolna granica ca³kowania
-	int n = 10; //liczba punktow dziel¹cych przedzia³ ca³kowania
-	int m = 16; //najwy¿sza potêga dwójki w ci¹gu u¿ywanym w pêtli
-	double (*wskaznikFunkcja1)(double);//deklaracja wskaŸnika do pierwszej funkcji
-	double (*wskaznikFunkcja2)(double);
-	wskaznikFunkcja1 = &mojaFunkcja1;
-	wskaznikFunkcja2 = &mojaFunkcja2;
-	double bladCalkowania1 = fabs(ca³kaAnalityczna_1(a, b) - trapez(a, b, wskaznikFunkcja1, n));
-	for (int i = 1; i <= m; i++) {
-		int nCiag = pow(2, i);// n = 2,4,8,...,2^m
-		fprintf(f, "%d %4.16lf %4.16lf %4.16lf %4.16lf\n", nCiag, trapez(a, b, wskaznikFunkcja1, nCiag), fabs(2 - trapez(a, b, wskaznikFunkcja1, nCiag)), simpson(a, b, wskaznikFunkcja1, nCiag), fabs(2 - simpson(a, b, wskaznikFunkcja1, nCiag)));
-		fprintf(g, "%4.16lf,%4.16lf,%d\n", ca³kaAnalityczna_1(a, b),simpson(a, b, wskaznikFunkcja1, nCiag), nCiag);
+	g = fopen("plik2.txt", "w");
+	h = fopen("plik3.txt", "w");
+	double eps = 1;
+	int iter;
+	int* i_iter;
+	i_iter = &iter;
+	double a = -20;
+	double b = 20;
+	for (int i = -20; i < 0;i++) {
+		eps = 1 * pow(2, i);
+		printf("%lf %d\n\r", bisec(a, b, fun, eps, i_iter), iter);
+		fprintf(f, " %lf %d\n", bisec(a, b, fun, eps, i_iter), iter);
+
+	}
+	printf(":3\n\n");
+	for (int i = -20; i < 0;i++) {
+		eps = 1 * pow(2, i);
+		printf("%lf %d\n\r", siecz(a, b, fun, eps, i_iter), iter);
+		fprintf(g, " %lf %d\n", siecz(a, b, fun, eps, i_iter), iter);
+	}
+	printf(":3\n\r");
+	for (int i = -20; i < 0;i++) {
+		eps = 1 * pow(2, i);
+		printf("%lf %d\n\r", newton(a,fun,pochodna, eps, i_iter), iter);
+		fprintf(h, " %lf %d\n", newton(a, fun, pochodna, eps, i_iter), iter);
 	}
 
+	fclose(f);
+	fclose(g);
+}
+double siecz(double x1,double x2, double (*pf)(double), double eps, int* iter) //funkcja obliczajaca pierwiastek metoda stycznych
+{
+	double pom;
+	*iter = 0;
+	while (fabs(pf(x1)) > eps && fabs(x2 - x1) > eps)
+	{
+		pom = x2 - (pf(x2) * (x2 - x1)) / (pf(x2) - pf(x1));
+		x1 = x2;
+		x2 = pom;
+		(*iter)++;
+	}
+	return x1;
+}
+double newton(double x, double(*pf)(double), double(*poch)(double),double eps, int* iter) //funkcja obliczajaca pierwiastek metoda stycznych
+{
+	double dx = 1;
+	*iter = 0;
+	while (fabs(x) > eps && fabs(dx) > eps)
+	{
+		dx = (pf(x) / poch(x));
+		x = x - dx;
+		(*iter)++;
+	}
+	return x;
 }
 
-double mojaFunkcja1(double x) {
-	return sin(x);
+double fun(double x) {
+	return cos(x) - x;
 }
-double mojaFunkcja2(double x) {
-	return 1.0/ (x);
-}
-double ca³kaAnalityczna_1(double a, double b) {
-	return ((1.0 / a)- (1.0 / b));
-}
-double ca³kaAnalityczna_2(double a, double b) {
-	return (log(a) - log(b));
-}
-double gauss(double (*pf)(double)) {
-	double xi[] = { -0.9061798459386639927976269, -0.5384693101056830910363144, 0.0,0.5384693101056830910363144 ,0.9061798459386639927976269 };
-	double wi[] = { 0.2369268850561890875142640 , 0.4786286704993664680412915 ,0.5688888888888888888888889 ,0.478628670499366468041291 ,0.2369268850561890875142640};
-
+double pochodna(double x) {
+	return -1.0 * sin(x) - 1.0;
 }
