@@ -1,4 +1,5 @@
-#define _CRT_SECURE_NO_WARNINGS    
+#define _CRT_SECURE_NO_WARNINGS 
+#define _USE_MATH_DEFINES
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -14,32 +15,34 @@ double newton(double x, double(*pf)(double), double(*poch)(double), double eps, 
 void main()
 {
 	FILE* f,* g,*h;
-	f = fopen("plik1.txt", "w");
-	g = fopen("plik2.txt", "w");
-	h = fopen("plik3.txt", "w");
+	f = fopen("bisekcja.txt", "w");
+	g = fopen("sieczna.txt", "w");
+	h = fopen("newton.txt", "w");
 	double eps = 1;
 	int iter;
 	int* i_iter;
 	i_iter = &iter;
-	double a = -20;
-	double b = 20;
-	for (int i = -20; i < 0;i++) {
+	
+	double a = 0;
+	double c = 0.1;
+	double b = M_PI;
+	for (int i = -51; i < 0;i++) {
 		eps = 1 * pow(2, i);
 		printf("%lf %d\n\r", bisec(a, b, fun, eps, i_iter), iter);
-		fprintf(f, " %lf %d\n", bisec(a, b, fun, eps, i_iter), iter);
+		fprintf(f, " %d %.16lf\n", iter, eps);
 
 	}
 	printf(":3\n\n");
-	for (int i = -20; i < 0;i++) {
+	for (int i = -51; i < 0;i++) {
 		eps = 1 * pow(2, i);
 		printf("%lf %d\n\r", siecz(a, b, fun, eps, i_iter), iter);
-		fprintf(g, " %lf %d\n", siecz(a, b, fun, eps, i_iter), iter);
+		fprintf(g, " %d %.16lf\n", iter,eps);
 	}
 	printf(":3\n\r");
-	for (int i = -20; i < 0;i++) {
+	for (int i = -51; i < 0;i++) {
 		eps = 1 * pow(2, i);
-		printf("%lf %d\n\r", newton(a,fun,pochodna, eps, i_iter), iter);
-		fprintf(h, " %lf %d\n", newton(a, fun, pochodna, eps, i_iter), iter);
+		printf("%lf %d\n\r", newton(c,fun,pochodna, eps, i_iter), iter);
+		fprintf(h, "%d %.16lf\n",iter,eps);
 	}
 
 	fclose(f);
